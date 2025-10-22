@@ -1,0 +1,11 @@
+2025-10-13 19:32:23,161 - worker_1 - INFO - 👷 Worker 1 starting with 50 keywords...
+2025-10-13 19:32:23,162 - worker_1 - INFO - Processing keyword: 'leggings'
+2025-10-13 19:32:23,185 - worker_1 - INFO - Processing keyword: 'fleece lined leggings'
+2025-10-13 19:32:23,193 - worker_1 - INFO - Processing keyword: 'yoga pants'
+2025-10-13 19:32:23,219 - worker_1 - INFO - Processing keyword: 'sports bra'
+2025-10-13 19:32:23,247 - worker_1 - INFO - Processing keyword: 'shapewear'
+2025-10-13 19:32:23,291 - worker_1 - INFO - Processing keyword: 'compression socks'
+2025-10-13 19:32:23,693 - worker_1 - INFO - Processing keyword: 'heated vest'
+2025-10-13 19:32:23,697 - worker_1 - INFO - Processing keyword: 'hoodie'
+2025-10-13 19:32:23,707 - worker_1 - INFO - Processing keyword: 'cargo pants'
+2025-10-13 19:32:23,730 - worker_1 - INFO - Processing keyword: 'joggers'

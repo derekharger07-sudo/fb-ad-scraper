@@ -1,0 +1,36 @@
+📦 HOW TO DOWNLOAD THIS PROJECT FROM REPLIT
+==============================================
+
+Option 1: Download as ZIP (Easiest)
+------------------------------------
+1. Click the 3-dot menu (⋮) at the top of Replit
+2. Select "Download as ZIP"
+3. Extract the ZIP on your computer
+4. Open terminal in the extracted folder
+5. Follow LOCAL_SETUP.md instructions
+
+Option 2: Clone with Git
+------------------------
+1. Get your Replit Git URL (in Git pane)
+2. On your computer, run:
+   git clone <your-replit-url>
+3. Follow LOCAL_SETUP.md instructions
+
+Option 3: Manual Download
+-------------------------
+1. Download these key files:
+   - All files in app/ folder
+   - distributed_scraper.py
+   - keywords.txt (or keywords_246_full.txt)
+   - requirements.txt
+   - LOCAL_SETUP.md
+2. Create the same folder structure locally
+3. Follow LOCAL_SETUP.md instructions
+
+📚 What to do after downloading:
+1. Read LOCAL_SETUP.md for complete setup guide
+2. Install Python dependencies: pip install -r requirements.txt
+3. Set up your SpyFu API key in .env file
+4. Run: python3 distributed_scraper.py
+
+Your local machine will handle this MUCH better than Replit! 🚀
