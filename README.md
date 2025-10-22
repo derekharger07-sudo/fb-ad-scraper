@@ -1,3 +1,4 @@
+HEAD
 # Product Research Tool — Thin Slice Starter
 
 A fast, no‑BS starter to build an ad discovery + SKU/angle intelligence slice.
@@ -49,3 +50,7 @@ requirements.txt
 - Keep scraping **polite and legal**: target public pages, rate-limit, follow platform rules.
 - When ready for Postgres, change `DATABASE_URL` and run `python app/db/repo.py --init`.
 - Add your embedding model + HDBSCAN if you want deduping beyond perceptual hashing.
+=======
+# fb-ad-scraper
+Facebook Ad Scraper &amp; AI Research Tool
+df38d0802bbfac97c652d7c6b9574ae8bc3b240d
