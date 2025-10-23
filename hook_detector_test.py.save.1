@@ -1,0 +1,38 @@
+import cv2
+import os
+import numpy as np
+from ultralytics import YOLO
+
+# === CONFIGURATION ===
+VIDEO_PATH = "test_video.mp4"
+SECONDS = 6
+FRAMES_TO_ANALYZE = 5
+MODEL_NAME = "yolov8n.pt"   # small + fast model, auto-downloads once
+# =======================
+
+if not os.path.exists(VIDEO_PATH):
+    raise FileNotFoundError(f"Video not found: {VIDEO_PATH}")
+
+# Load YOLO model
+print("Loading YOLOv8 model locally...")
+model = YOLO(MODEL_NAME)
+
+# Open video
+cap = cv2.VideoCapture(VIDEO_PATH)
+fps = int(cap.get(cv2.CAP_PROP_FPS))
+frames_to_read = int(min(cap.get(cv2.CAP_PROP_FRAME_COUNT), fps * SECONDS))
+step = max(1, frames_to_read // FRAMES_TO_ANALYZE)
+
+frames = []
+for i in range(FRAMES_TO_ANALYZE):
+    cap.set(cv2.CAP_PROP_POS_FRAMES, i * step)
+    ret, frame = cap.read()
+    if not ret:
+        continue
+    frames.append((i * step / fps, frame))  # (timestamp, frame)
+cap.release()
+
+print(f"Sampled {len(frames)} frames from the first {SECONDS} s.\n")
+
+# === Run local object detection ===
+print("🔍 Running YO
