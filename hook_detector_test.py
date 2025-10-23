@@ -5,7 +5,7 @@ import numpy as np
 from ultralytics import YOLO
 
 # === CONFIGURATION ===
-VIDEO_PATH = "test_video.mp4"
+VIDEO_PATH = "test_video_fb.mp4"
 SECONDS = 6
 FRAMES_TO_ANALYZE = 5
 MODEL_NAME = "yolov8n.pt"   # small + fast model, auto-downloads once
@@ -43,26 +43,40 @@ print("\n🧠 Loading BLIP-2 (Flan-T5-XL) model locally...")
 processor = Blip2Processor.from_pretrained("Salesforce/blip2-flan-t5-xl")
 model = Blip2ForConditionalGeneration.from_pretrained("Salesforce/blip2-flan-t5-xl").to("cuda" if torch.cuda.is_available() else "cpu")
 
-# --- Generate richer captions (BLIP-2) ---
+# --- Generate richer captions (BLIP-2 + OCR) ---
 from PIL import Image
 from transformers import Blip2Processor, Blip2ForConditionalGeneration
+import pytesseract
+import cv2
 
-print("\n🧠 Loading BLIP-2 (Flan-T5-XL) model locally...")
+print("\n ^=   Loading BLIP-2 (Flan-T5-XL) model locally...")
 processor = Blip2Processor.from_pretrained("Salesforce/blip2-flan-t5-xl")
 model = Blip2ForConditionalGeneration.from_pretrained("Salesforce/blip2-flan-t5-xl")
 
-print("\n🔍 Generating richer captions for sampled frames...\n")
+print("\n 🔍 Generating richer captions and detecting on-screen text...\n")
 
 frames_captions = []
+ocr_texts = []
+
 for idx, (timestamp, frame) in enumerate(frames, start=1):
-    img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-    inputs = processor(images=img, return_tensors="pt").to(model.device)
+    # --- BLIP-2 captioning ---
+    img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    pil_img = Image.fromarray(img_rgb)
+    inputs = processor(images=pil_img, return_tensors="pt").to(model.device)
     out = model.generate(**inputs, max_new_tokens=40)
     caption = processor.decode(out[0], skip_special_tokens=True)
-    print(f"Frame {idx} ({timestamp:.2f}s): {caption}")
     frames_captions.append(caption)
+    print(f"Frame {idx} ({timestamp:.2f}s): {caption}")
 
-print("\n✅ Local BLIP-2 captioning complete.")
+    # --- OCR text detection ---
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    gray = cv2.threshold(gray, 180, 255, cv2.THRESH_BINARY)[1]
+    text = pytesseract.image_to_string(gray).strip()
+    if text:
+        ocr_texts.append(text)
+        print(f"🧾  OCR @ {timestamp:.2f}s: {text}")
+
+print("\n ✅ Local BLIP-2 captioning and OCR complete.\n")
 
 # --- Subtitles (Whisper) ---
 from faster_whisper import WhisperModel
