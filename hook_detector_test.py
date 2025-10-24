@@ -4,6 +4,69 @@ os.environ["CTRANSLATE2_USE_CUDNN"] = "0"  # Force disable cuDNN for faster-whis
 import numpy as np
 from ultralytics import YOLO
 
+import cv2
+import os
+os.environ["CTRANSLATE2_USE_CUDNN"] = "0"  # Force disable cuDNN for faster-whisper
+import numpy as np
+from ultralytics import YOLO
+
+# --- GPT-4o Mini Marketing Intelligence Integration ---
+from openai import OpenAI
+import json
+
+client = OpenAI()
+
+def classify_with_gpt(combined_text):
+    """
+    Sends combined OCR + Whisper + caption text to GPT-4o-mini
+    and returns a structured 15-field marketing analysis JSON.
+    """
+    system_prompt = (
+        "You are an AI marketing analyst. Given ad text, subtitles, and captions, "
+        "extract a structured JSON object with these fields:\n"
+        "hook_text, hook_type, angle, pain_points, benefits, seasonality_cues, "
+        "targeting_signals, cta_stage, visual_tags@t≤6s, product_category, "
+        "compliance_risk_flags, proof_archetype, tone_emotion, angle_fingerprint."
+    )
+
+    user_prompt = f"""
+    Analyze this ad's first 6 seconds and fill each field with your best inference.
+
+    === INPUT TEXT ===
+    {combined_text}
+    """
+
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
+            temperature=0.2,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ]
+        )
+
+        content = completion.choices[0].message.content.strip()
+
+        # --- Clean markdown fences if GPT wrapped output in ```json ... ``` ---
+        if content.startswith("```"):
+            content = content.strip("`")
+            if "json" in content[:20].lower():
+                content = content.split("\n", 1)[1]  # remove ```json
+            if "```" in content:
+                content = content.rsplit("```", 1)[0]  # remove trailing ```
+
+        try:
+            data = json.loads(content)
+        except json.JSONDecodeError as e:
+            data = {"error": f"JSON decode error: {str(e)}", "raw_output": content}
+
+    except Exception as e:
+        data = {"error": str(e), "raw_output": content if 'content' in locals() else None}
+
+    return data
+# --- End GPT Integration ---
+
 # === CONFIGURATION ===
 VIDEO_PATH = "test_video_fb.mp4"
 SECONDS = 6
@@ -211,6 +274,25 @@ output_data = {
 print("\n📊 Hook Intelligence Extracted:")
 for k, v in output_data.items():
     print(f"{k}: {v}")
+
+# === GPT-4o Mini Angle Analysis ===
+print("\n🤖 Sending extracted text to GPT-4o Mini for full marketing analysis...\n")
+
+# Combine all text sources into one string
+combined_text = "\n".join([
+    f"OCR: {' '.join(ocr_texts)}" if 'ocr_texts' in locals() else "",
+    f"Subtitles: {hook_text}",
+    f"Captions: {' '.join(frames_captions)}"
+])
+
+# Run GPT classification
+gpt_analysis = classify_with_gpt(combined_text)
+
+print("🧩 GPT Marketing Intelligence:")
+print(json.dumps(gpt_analysis, indent=2, ensure_ascii=False))
+
+# Merge GPT results into output_data and save
+output_data["gpt_analysis"] = gpt_analysis
 
 # Save structured data
 with open("hook_outputs.jsonl", "a", encoding="utf-8") as f:
