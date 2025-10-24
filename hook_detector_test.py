@@ -20,22 +20,47 @@ def classify_with_gpt(combined_text):
     """
     Sends combined OCR + Whisper + caption text to GPT-4o-mini
     and returns a structured 15-field marketing analysis JSON.
+    Uses upgraded prompt to improve angle specificity and accuracy.
     """
     system_prompt = (
-        "You are an AI marketing analyst. Given ad text, subtitles, and captions, "
-        "extract a structured JSON object with these fields:\n"
-        "hook_text, hook_type, angle, pain_points, benefits, seasonality_cues, "
-        "targeting_signals, cta_stage, visual_tags@t≤6s, product_category, "
-        "compliance_risk_flags, proof_archetype, tone_emotion, angle_fingerprint."
+        "You are an advanced AI marketing analyst specializing in paid social video ads. "
+        "You analyze hooks, visuals, captions, and subtitles to identify the core marketing message "
+        "and persuasion angle. Return a structured JSON object with these fields: "
+        "hook_text, hook_type, angle, pain_points, benefits, seasonality_cues, targeting_signals, "
+        "cta_stage, visual_tags@t≤6s, product_category, compliance_risk_flags, proof_archetype, "
+        "tone_emotion, angle_fingerprint. "
+
+        "CRITICAL RULES: "
+        "- 'angle' should express the specific promise or transformation the ad sells "
+        "(e.g., 'Look snatched while staying warm', 'Stop hair loss naturally', 'Lose fat without dieting'), "
+        "not a vague theme (avoid generic phrases like 'fashion meets functionality' or 'tech innovation'). "
+        "- Infer the angle by combining hook_text, spoken subtitles, and visible product function. "
+        "- 'angle_fingerprint' is a short 3–6 word abstraction of that promise (e.g., 'Warmth + Body Confidence'). "
+        "- 'pain_points' are the frustrations or problems implied or shown in the ad. "
+        "- 'benefits' are the explicit or implied solutions or results. "
+        "- 'tone_emotion' should reflect the emotional delivery (e.g., playful, urgent, empowering, cozy, luxurious). "
+        "- 'proof_archetype' refers to the type of social proof or demonstration (e.g., testimonial, UGC try-on, "
+        "before/after, expert endorsement). "
+        "- Keep all strings concise and marketing-oriented. "
+        "Examples: "
+        "HOOK: 'Stay Warm, Look Snatched!' "
+        "→ angle: 'Look snatched while staying warm'. "
+        "HOOK: 'These leggings replace your winter pants' "
+        "→ angle: 'Replace bulky pants with sleek fleece leggings'. "
+        "HOOK: 'I stopped my acne with this 1 step' "
+        "→ angle: 'Clear your skin fast with one step'. "
+        "HOOK: 'You’ll never go back to normal bras again' "
+        "→ angle: 'Experience unmatched comfort and lift'. "
+
+        "Output only valid JSON."
     )
 
     user_prompt = f"""
-    Analyze this ad's first 6 seconds and fill each field with your best inference.
+    Analyze the following ad's first 6 seconds and fill each field with your best inference.
 
     === INPUT TEXT ===
     {combined_text}
     """
-
     try:
         completion = client.chat.completions.create(
             model="gpt-4o-mini",
