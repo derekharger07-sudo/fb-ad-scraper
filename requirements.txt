@@ -195,3 +195,4 @@ webencodings==0.5.1
 websocket-client==1.9.0
 widgetsnbextension==4.0.14
 wrapt==2.0.0
+pytesseract>=0.3.10
